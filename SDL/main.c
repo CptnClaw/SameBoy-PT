@@ -244,6 +244,12 @@ static void handle_events(GB_gameboy_t *gb)
                             
                         }
                         break;
+
+                    case SDL_SCANCODE_T:
+                        if (event.type == SDL_KEYDOWN && (event.key.keysym.mod & KMOD_CTRL)) {
+                            GB_translate_break(gb);
+                        }
+                        break;
                         
                     case SDL_SCANCODE_R:
                         if (event.key.keysym.mod & MODIFIER) {

@@ -40,6 +40,7 @@ void GB_debugger_load_symbol_file(GB_gameboy_t *gb, const char *path);
 const char *GB_debugger_name_for_address(GB_gameboy_t *gb, uint16_t addr);
 bool GB_debugger_evaluate(GB_gameboy_t *gb, const char *string, uint16_t *result, uint16_t *result_bank); /* result_bank is -1 if unused. */
 void GB_debugger_break(GB_gameboy_t *gb);
+void GB_translate_break(GB_gameboy_t *gb);
 bool GB_debugger_is_stopped(GB_gameboy_t *gb);
 void GB_debugger_set_disabled(GB_gameboy_t *gb, bool disabled);
 void GB_debugger_clear_symbols(GB_gameboy_t *gb);

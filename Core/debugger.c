@@ -9,6 +9,12 @@ typedef struct {
     uint16_t value;
 } value_t;
 
+
+/* For pokemon translator */
+uint32_t AddrPrintText = 0;
+char TextHL[256];
+
+
 typedef struct {
     enum {
         LVALUE_MEMORY,
@@ -2261,6 +2267,13 @@ void GB_debugger_run(GB_gameboy_t *gb)
 {
     if (gb->debug_disable) return;
 
+    /* For pokemon translator */
+    bool error;
+    if (AddrPrintText == 0)
+    {
+        AddrPrintText = BP_KEY(debugger_evaluate(gb, "PrintText_NoCreatingTextBox", (unsigned)27, &error, NULL, NULL));
+    }    
+
     char *input = NULL;
     if (gb->debug_next_command && gb->debug_call_depth <= 0 && !gb->halted) {
         gb->debug_stopped = true;
@@ -2322,6 +2335,17 @@ next_command:
                 gb->nontrivial_jump_state = NULL;
             }
         }
+    }
+
+    /* For pokemon translator */
+    value_t full_addr = (VALUE_16(gb->pc));
+    full_addr.has_bank = true;
+    full_addr.bank = bank_for_addr(gb, gb->pc);
+    uint32_t gbpc_key = BP_KEY(full_addr);
+    if (gbpc_key == AddrPrintText)
+    {
+        value_t HL = debugger_evaluate(gb, "hl", (unsigned)2, &error, NULL, NULL);
+        strcpy(TextHL, debugger_value_to_string(gb, HL, true));
     }
 
     if (gb->debug_stopped && !gb->debug_disable) {
@@ -2448,6 +2472,23 @@ bool GB_debugger_evaluate(GB_gameboy_t *gb, const char *string, uint16_t *result
 void GB_debugger_break(GB_gameboy_t *gb)
 {
     gb->debug_stopped = true;
+}
+
+void GB_translate_break(GB_gameboy_t *gb)
+{
+    char cmd[400];
+    sprintf(cmd, "./translator.sh \"%s\"", TextHL);
+    FILE *pid = popen(cmd, "w");
+    if (pid == NULL) {
+        printf("Error opening pipe!\n");
+    }
+    
+    /* Consider waiting for the process to exit, and/or breaking the debugger
+
+    pclose(pid);
+
+    gb->debug_stopped = true;
+    */
 }
 
 bool GB_debugger_is_stopped(GB_gameboy_t *gb)
